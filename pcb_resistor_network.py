@@ -235,7 +235,8 @@ def demo():
         (2.0, 12.0),
         (6.0, 16.0),
     ]
-    r = 0.6
+    # Slightly smaller vias for clarity
+    r = 0.4
     vias = [circle_polygon(cx, cy, r, 20) for cx, cy in via_centers]
 
     network, pts = build_resistor_network(board, vias, 1.0, 0.02)
@@ -293,9 +294,8 @@ def demo():
         f.write(style)
         pts_str = " ".join(f"{x},{y}" for x, y in board)
         f.write(f'<polygon class="board" points="{pts_str}"/>\n')
-        for via in vias:
-            via_str = " ".join(f"{x},{y}" for x, y in via)
-            f.write(f'<polygon class="via" points="{via_str}"/>\n')
+        for cx, cy in via_centers:
+            f.write(f'<circle class="via" cx="{cx}" cy="{cy}" r="{r}"/>\n')
         for (p1, p2), r in zip(edges, resistances):
             color = colour_for(r)
             f.write(
