@@ -15,6 +15,7 @@ resistances. `points` holds the coordinates of each node by index.
 """
 
 from typing import List, Tuple, Dict
+import math
 
 # ---------------------------------------------------------------------------
 # Geometry helpers
@@ -59,6 +60,15 @@ def polygon_area(poly: Polygon) -> float:
         area += xj * y - x * yj
         j = i
     return 0.5 * area
+
+
+def circle_polygon(cx: float, cy: float, r: float, segments: int = 20) -> Polygon:
+    """Return a polygon approximating a circle."""
+    pts: Polygon = []
+    for i in range(segments):
+        theta = 2 * math.pi * i / segments
+        pts.append((cx + r * math.cos(theta), cy + r * math.sin(theta)))
+    return pts
 
 
 def clip_polygon_with_rect(
@@ -198,50 +208,42 @@ def build_resistor_network(
 def demo():
     """Demonstrate network generation on an irregular board with vias.
 
-    The demo builds a trapezoidal board with ten square vias. The resistor
-    network is written to ``demo_network.svg`` where edge colours correspond to
-    resistance values.
+    The demo builds a larger trapezoidal board with ten circular vias. The
+    resistor network is written to ``demo_network.svg`` where edge colours
+    correspond to resistance values.
     """
 
-    # Irregular trapezoid board
+    # Larger irregular trapezoid board
     board = [
         (0.0, 0.0),
-        (8.0, 0.0),
-        (10.0, 6.0),
-        (6.0, 10.0),
-        (0.0, 8.0),
+        (16.0, 0.0),
+        (20.0, 12.0),
+        (12.0, 20.0),
+        (0.0, 16.0),
     ]
 
-    # Ten small square vias
+    # Ten small circular vias
     via_centers = [
-        (2.0, 2.0),
-        (3.5, 2.5),
-        (5.0, 5.0),
-        (7.0, 7.0),
-        (4.0, 3.0),
-        (6.0, 2.0),
-        (8.0, 4.0),
-        (5.0, 7.0),
-        (1.0, 6.0),
-        (3.0, 8.0),
+        (4.0, 4.0),
+        (7.0, 5.0),
+        (10.0, 10.0),
+        (14.0, 14.0),
+        (8.0, 6.0),
+        (12.0, 4.0),
+        (16.0, 8.0),
+        (10.0, 14.0),
+        (2.0, 12.0),
+        (6.0, 16.0),
     ]
-    r = 0.3
-    vias = [
-        [
-            (cx - r, cy - r),
-            (cx + r, cy - r),
-            (cx + r, cy + r),
-            (cx - r, cy + r),
-        ]
-        for cx, cy in via_centers
-    ]
+    r = 0.6
+    vias = [circle_polygon(cx, cy, r, 20) for cx, cy in via_centers]
 
     network, pts = build_resistor_network(board, vias, 1.0, 0.02)
     print("Number of nodes:", len(pts))
 
     # Show a connection near the centre of the board
     for idx, pt in enumerate(pts):
-        if 4.0 < pt[0] < 6.0 and 4.0 < pt[1] < 6.0:
+        if 9.0 < pt[0] < 11.0 and 9.0 < pt[1] < 11.0:
             print("Node", idx, "at", pt)
             print("Neighbours:", network[idx])
             break
